@@ -2,9 +2,54 @@ from django.contrib.auth.models import User
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
 
 from .models import Topic, Comment
 from .serializers import TopicSerializer, CommentSerializer, RegisterSerializer
+
+
+class TopicListGenericView(GenericAPIView):
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer
+
+    def get(self, request):
+        topics = self.get_queryset()
+        topics_serializer = self.get_serializer(topics, many=True)
+        return Response(topics_serializer.data)
+
+    def post(self, request):
+        topic_serializer: TopicSerializer = self.get_serializer(data=request.data)
+        if topic_serializer.is_valid():
+            topic = topic_serializer.save()
+            context = {
+                'message': "Mavzu yaratildi",
+                'topic': self.get_serializer(topic).data
+            }
+            return Response(context, status=200)
+        return Response(topic_serializer.errors, status=400)
+
+
+class TopicDetailGenericView(GenericAPIView):
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer
+    lookup_field = 'pk'
+
+    def get(self, request, pk):
+        topic = self.get_object()
+        topic_serializer = self.get_serializer(topic)
+        return Response(topic_serializer.data)
+
+    def put(self, request, pk):
+        topic_serializer: TopicSerializer = self.get_serializer(data=request.data, partial=True)
+        if topic_serializer.is_valid():
+            topic = self.get_object()
+            updated_topic = topic_serializer.update(instance=topic, validated_data=topic_serializer.validated_data)
+            context = {
+                'message': "Mavzu tahrirlandi",
+                'topic': self.get_serializer(updated_topic).data
+            }
+            return Response(context)
+        return Response(topic_serializer.errors, status=400)
 
 
 class RegisterView(generics.CreateAPIView):

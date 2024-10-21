@@ -7,6 +7,9 @@ urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register'),
 
 
+    path('generic/topic/list/', views.TopicListGenericView.as_view(), name="generic-topic-list"),
+    path('generic/topic/<int:pk>/detail/', views.TopicDetailGenericView.as_view(), name="generic-topic-detail"),
+
     path('topic/list/', views.TopicListView.as_view(), name="topic-list"),
     path('topic/<int:pk>/detail/', views.TopicDetailView.as_view(), name="topic-detail"),
 
